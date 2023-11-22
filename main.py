@@ -1,6 +1,10 @@
 import tkinter as tk
+import random
 
-turno = True # True -> giocatore, False -> AI
+def random_boolean():
+    return random.choice([True, False])
+
+turno = random_boolean()
 
 def cambio_turno():
     global turno
