@@ -1,8 +1,17 @@
 import tkinter as tk
 
+turno = True # True -> giocatore, False -> AI
+
+def cambio_turno():
+    global turno
+    turno = not turno
+
 
 # Funzione chiamata quando l'utente fa clic su un canvas
-def colpo_su_griglia(event, grid):
+def colpo_su_griglia(event, grid, player):
+    if player != turno:
+        return
+
     cell_width = 30
     x, y = event.x, event.y
     row, col = y // cell_width, x // cell_width
@@ -21,6 +30,8 @@ def colpo_su_griglia(event, grid):
     update_grid(ai_canvas, AiGrid)
     checkGameOver(AiGrid)
     checkGameOver(PlayerGrid)
+
+    cambio_turno()
 
 
 # Funzione per aggiornare la griglia grafica
@@ -145,7 +156,7 @@ if __name__ == '__main__':
     update_grid(player_canvas, PlayerGrid)
 
     # Associa la funzione del colpo al clic del mouse sul canvas del giocatore
-    player_canvas.bind("<Button-1>", lambda event: colpo_su_griglia(event, PlayerGrid))
-    ai_canvas.bind("<Button-1>", lambda event: colpo_su_griglia(event, AiGrid))
+    player_canvas.bind("<Button-1>", lambda event: colpo_su_griglia(event, PlayerGrid, True))
+    ai_canvas.bind("<Button-1>", lambda event: colpo_su_griglia(event, AiGrid, False))
 
     root.mainloop()
