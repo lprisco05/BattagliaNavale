@@ -6,6 +6,7 @@ def random_boolean():
 
 turno = random_boolean()
 messaggio = None
+gameOverVar = False
 
 
 def cambio_turno():
@@ -28,34 +29,37 @@ def cambio_turno():
 def colpo_su_griglia(event, grid, player):
     if player != turno:
         return
-
     cell_width = 30
     x, y = event.x, event.y
     row, col = y // cell_width, x // cell_width
+    global gameOverVar
 
     # Esegui la logica del colpo sulla casella (row, col)
+    if not gameOverVar:
+        if grid[row][col] == 3:
+            colpo_su_griglia(event, grid, player)
+            return
+        elif grid[row][col] == 0:
+            print("Colpo a vuoto!")
+            grid[row][col] = 3  # Segna come nave mancata
+        elif grid[row][col] == 2:
+            return
+        elif grid[row][col] == 1:
+            print("Nave colpita!")
+            grid[row][col] = 2
+            update_grid(player_canvas, PlayerGrid)
+            update_grid(ai_canvas, AiGrid)
+            checkGameOver(AiGrid)
+            checkGameOver(PlayerGrid)
+            colpo_su_griglia(event, grid, player)
+            return
+            # Rimane come nave colpita
 
-    if grid[row][col] == 0:
-        print("Colpo a vuoto!")
-        grid[row][col] = 3  # Segna come nave mancata
-    elif grid[row][col] == 3:
-        colpo_su_griglia(event, grid, player)
-        return
-    elif grid[row][col] == 1:
-        print("Nave colpita!")
-        grid[row][col] = 2
+        # Aggiorna la griglia grafica dopo il colpo
         update_grid(player_canvas, PlayerGrid)
         update_grid(ai_canvas, AiGrid)
-        checkGameOver(AiGrid)
-        checkGameOver(PlayerGrid)
-        colpo_su_griglia(event, grid, player)
-        # Rimane come nave colpita
 
-    # Aggiorna la griglia grafica dopo il colpo
-    update_grid(player_canvas, PlayerGrid)
-    update_grid(ai_canvas, AiGrid)
-
-    cambio_turno()
+        cambio_turno()
 
 
 # Funzione per aggiornare la griglia grafica
@@ -77,22 +81,33 @@ def update_grid(canvas, grid):
                 color = "red"  # Nave colpita
             elif cell_value == 3:
                 color = "gray"  # Nave mancata
+            elif cell_value == 6:
+                color = "lime"
+            elif cell_value == 5:
+                color = "red"
 
             canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="black")
 
 
 def checkGameOver(griglia):
+    global turno
+    global AiGrid,ai_canvas
+    global PlayerGrid,player_canvas
     for ele in griglia:
         for num in ele:
             if num == 1:
                 return False
-    print("GAME OVER")
     messaggio.config(text="GAME OVER")
-    for a in len(griglia):
-        griglia[a]=2
+    if turno:
+        PlayerGrid = [[5 for _ in range(10)] for _ in range(10)]
+        AiGrid = [[6 for _ in range(10)] for _ in range(10)]
+    else:
+        PlayerGrid = [[6 for _ in range(10)] for _ in range(10)]
+        AiGrid = [[5 for _ in range(10)] for _ in range(10)]
     update_grid(player_canvas, PlayerGrid)
     update_grid(ai_canvas, AiGrid)
-
+    global gameOverVar
+    gameOverVar = True
     return True
 
 
