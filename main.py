@@ -5,10 +5,23 @@ def random_boolean():
     return random.choice([True, False])
 
 turno = random_boolean()
+messaggio = None
+
 
 def cambio_turno():
     global turno
+    global messaggio
+
     turno = not turno
+    if not messaggio:
+        messaggio = tk.Label(root, text="")
+        messaggio.grid(row=1, column=0, columnspan=2)
+    if turno:
+        messaggio.config(text="Turno del giocatore   ↗")
+    else:
+        messaggio.config(text="↖   Turno dell'IA")
+
+
 
 
 # Funzione chiamata quando l'utente fa clic su un canvas
@@ -25,15 +38,22 @@ def colpo_su_griglia(event, grid, player):
     if grid[row][col] == 0:
         print("Colpo a vuoto!")
         grid[row][col] = 3  # Segna come nave mancata
+    elif grid[row][col] == 3:
+        colpo_su_griglia(event, grid, player)
+        return
     elif grid[row][col] == 1:
         print("Nave colpita!")
-        grid[row][col] = 2  # Rimane come nave colpita
+        grid[row][col] = 2
+        update_grid(player_canvas, PlayerGrid)
+        update_grid(ai_canvas, AiGrid)
+        checkGameOver(AiGrid)
+        checkGameOver(PlayerGrid)
+        colpo_su_griglia(event, grid, player)
+        # Rimane come nave colpita
 
     # Aggiorna la griglia grafica dopo il colpo
     update_grid(player_canvas, PlayerGrid)
     update_grid(ai_canvas, AiGrid)
-    checkGameOver(AiGrid)
-    checkGameOver(PlayerGrid)
 
     cambio_turno()
 
@@ -67,6 +87,12 @@ def checkGameOver(griglia):
             if num == 1:
                 return False
     print("GAME OVER")
+    messaggio.config(text="GAME OVER")
+    for a in len(griglia):
+        griglia[a]=2
+    update_grid(player_canvas, PlayerGrid)
+    update_grid(ai_canvas, AiGrid)
+
     return True
 
 
@@ -124,6 +150,7 @@ def inserisci_nave(grid, riga, colonna, forma):  # una forma è definita come fo
 
 
 if __name__ == '__main__':
+
     AiGrid = [[0 for _ in range(10)] for _ in range(10)]
     PlayerGrid = [[0 for _ in range(10)] for _ in range(10)]
     naviAi = [
@@ -147,6 +174,7 @@ if __name__ == '__main__':
     # Creazione della finestra principale
     root = tk.Tk()
     root.title("Battaglia Navale")
+    root.geometry("700x400")
 
     # Creazione di due canvas per visualizzare le griglie
     ai_canvas = tk.Canvas(root, width=300, height=300, borderwidth=2, relief="ridge")
@@ -159,8 +187,13 @@ if __name__ == '__main__':
     update_grid(ai_canvas, AiGrid)
     update_grid(player_canvas, PlayerGrid)
 
+    cambio_turno()
+
     # Associa la funzione del colpo al clic del mouse sul canvas del giocatore
+
     player_canvas.bind("<Button-1>", lambda event: colpo_su_griglia(event, PlayerGrid, True))
     ai_canvas.bind("<Button-1>", lambda event: colpo_su_griglia(event, AiGrid, False))
+
+
 
     root.mainloop()
